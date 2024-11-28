@@ -8,6 +8,7 @@ opt.number = true
 opt.relativenumber = false
 opt.termguicolors = true
 
+--vim.cmd[[colorscheme tokyonight]]
 vim.call('plug#begin')
 
 Plug('ellisonleao/gruvbox.nvim')
@@ -21,9 +22,10 @@ Plug("saadparwaiz1/cmp_luasnip")
 Plug('hrsh7th/nvim-cmp')
 Plug('hrsh7th/cmp-nvim-lsp')
 
--- vim.cmd[[colorscheme gruvbox]]
-
 vim.call('plug#end')
+
+dofile('/home/neum/.local/share/nvim/plugged/tokyonight.nvim/lua/tokyonight/init.lua')
+vim.cmd[[colorscheme tokyonight]]
 
 require('snip')
 require("luasnip.loaders.from_snipmate").lazy_load()
@@ -33,3 +35,10 @@ require('sc')
 -- vim.cmd[[NERDTree]]
 vim.cmd[[autocmd vimenter * NERDTree]]
 vim.cmd[[filetype on]]
+
+vim.cmd [[
+  highlight Normal guibg=none
+  highlight NonText guibg=none
+  highlight Normal ctermbg=none
+  highlight NonText ctermbg=none
+]]
