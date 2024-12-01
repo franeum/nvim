@@ -25,7 +25,7 @@ Plug('rafamadriz/friendly-snippets')
 
 vim.call('plug#end')
 
-dofile('/home/neum/.local/share/nvim/plugged/tokyonight.nvim/lua/tokyonight/init.lua')
+dofile(os.getenv('HOME') .. '/.local/share/nvim/plugged/tokyonight.nvim/lua/tokyonight/init.lua')
 vim.cmd[[colorscheme tokyonight]]
 
 require('snip')
