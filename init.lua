@@ -12,123 +12,79 @@ vim.lsp.set_log_level("debug")
 --vim.cmd[[colorscheme tokyonight]]
 vim.call('plug#begin')
 
-Plug('ellisonleao/gruvbox.nvim')
-Plug("folke/tokyonight.nvim")
-Plug('m4xshen/autoclose.nvim')
-Plug('neoclide/coc.nvim', { ['branch'] = 'release' })
-Plug('preservim/nerdtree')
-Plug('davidgranstrom/scnvim')
-Plug('L3MON4D3/LuaSnip', { ['tag'] = 'v2.*', ['do'] = 'make install_jsregexp' })
-Plug("saadparwaiz1/cmp_luasnip")
-Plug('hrsh7th/nvim-cmp')
+Plug('wbthomason/packer.nvim') -- Plugin manager
+Plug('neovim/nvim-lspconfig') -- LSP client
 Plug('hrsh7th/cmp-nvim-lsp')
-Plug('rafamadriz/friendly-snippets')
-Plug('neovim/nvim-lspconfig')
-Plug('neovim/nvim-lspconfig')
+
+
+-- Plugin di completamento
+Plug('hrsh7th/nvim-cmp')
+Plug('hrsh7th/cmp-buffer')
+Plug('hrsh7th/cmp-path')
+
+-- Snippet engine
+Plug('L3MON4D3/LuaSnip')
+Plug('saadparwaiz1/cmp_luasnip')
 
 vim.call('plug#end')
 
-dofile(os.getenv('HOME') .. '/.local/share/nvim/plugged/tokyonight.nvim/lua/tokyonight/init.lua')
-vim.cmd[[colorscheme tokyonight]]
+vim.o.completeopt = "menu,menuone,noselect" -- Configura il completamento
+vim.o.termguicolors = true                  -- Abilita i colori nella terminale
+vim.o.number = true                         -- Mostra i numeri di riga
 
-require('snip')
-require("luasnip.loaders.from_snipmate").lazy_load()
-require("autoclose").setup()
-require('sc')
-
--- vim.cmd[[NERDTree]]
-vim.cmd[[autocmd vimenter * NERDTree]]
-vim.cmd[[filetype on]]
-
-vim.cmd [[
-  highlight Normal guibg=none
-  highlight NonText guibg=none
-  highlight Normal ctermbg=none
-  highlight NonText ctermbg=none
-]]
-
-
-local cmp = require'cmp'
-local luasnip = require'luasnip'
-
+-- Configura il completamento con nvim-cmp
+local cmp = require('cmp')
 cmp.setup({
   snippet = {
     expand = function(args)
-      luasnip.lsp_expand(args.body)
+      require('luasnip').lsp_expand(args.body) -- Usa LuaSnip per gli snippet
     end,
-  },
-  sources = {
-    { name = 'nvim_lsp' },
-    { name = 'luasnip' },
-    { name = 'buffer' },
-    { name = 'path' },
   },
   mapping = {
+    ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete(),
-    ['<CR>'] = cmp.mapping.confirm({ select = true }),
-    ['<Tab>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
-    ['<S-Tab>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
+    ['<C-e>'] = cmp.mapping.abort(),
+    ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Conferma con Enter
   },
-  formatting = {
-    fields = { 'abbr', 'kind', 'menu' },
-    format = function(entry, vim_item)
-      vim_item.kind = string.format('%s', vim_item.kind)
-      vim_item.menu = ({
-        luasnip = '[Snip]',
-        nvim_lsp = '[LSP]',
-        buffer = '[Buffer]',
-        path = '[Path]',
-      })[entry.source.name]
-      return vim_item
-    end,
-  },
+  sources = cmp.config.sources({
+    { name = 'nvim_lsp' }, -- Fonte LSP
+    { name = 'luasnip' },  -- Fonte Snippet
+  }, {
+    { name = 'buffer' },   -- Completamento dai buffer
+    { name = 'path' },     -- Completamento dei percorsi
+  }),
 })
 
--- Abilita il completamento per gli snippet
---[[
-require'cmp'.setup {
-  sources = {
-    { name = 'luasnip' },
-  },
-}
-]]--
-
+-- Configura il tuo server LSP
 local lspconfig = require('lspconfig')
 
-lspconfig.oldstyle = {
-    cmd = {"python", "/home/franeum/Documenti/supercollider_lsp/oldstyle.py"}, -- Percorso del server
-    filetypes = {"supercollider"}, 
-    root_dir = function(fname)
-        return vim.fn.getcwd() -- Usa la directory corrente come root
-    end,
-    on_attach = function(client, bufnr)
-    -- Funzioni da eseguire quando il client si connette
-      require('lsp').on_attach(client, bufnr)
-    end,
-    settings = {}
-}
+-- Integrazione delle capacità di completamento con LSP
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
+local cmd = { "/home/neum/anaconda3/bin/python", "/home/neum/.config/nvim/oldstyle.py" }
 
+local configs = require 'lspconfig.configs'
 
-local lspconfig = require("lspconfig")
-
--- Define the SuperCollider LSP
-lspconfig.supercollider_lsp = {
-    cmd = { "python", "/home/neum/Documenti/SC-LSP/example_server.py" }, -- Update with the server's path
-    filetypes = { "supercollider" }, -- File type for SuperCollider
-    root_dir = lspconfig.util.root_pattern(".git", "."), -- Define the root directory
-    on_attach = function(client, bufnr)
-        -- Enable LSP-related keybindings
-        local bufmap = function(mode, lhs, rhs)
-            vim.api.nvim_buf_set_keymap(bufnr, mode, lhs, rhs, { noremap = true, silent = true })
-        end
-
-        bufmap("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>")
-        bufmap("n", "K", "<cmd>lua vim.lsp.buf.hover()<CR>")
-    end,
-}
-
-vim.filetype.add({
-    extension = {
-        scd = "supercollider",
+-- Check if the config is already defined (useful when reloading this file)
+if not configs.supercollider_lsp then
+    configs.supercollider_lsp = {
+    default_config = {
+        cmd = cmd,
+        filetypes = {'supercollider'},
+        root_dir = function(fname)
+            return vim.loop.cwd()
+          end,
+        settings = {},
     },
+    }
+end
+
+lspconfig.supercollider_lsp.setup({
+    on_attach = function(client, bufnr)
+        print("SuperCollider LSP avviato!") -- Messaggio di connessione
+      end,
+      --capabilities = vim.lsp.protocol.make_client_capabilities()   
+      capabilities = capabilities
 })
+
+

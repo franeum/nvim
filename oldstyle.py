@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import logging
 import pygls
 # from lsprotocol.types import CompletionItem, CompletionParams, Position, TEXT_DOCUMENT_COMPLETION
 # from pygls.server import LanguageServer
@@ -12,12 +13,13 @@ from lsprotocol.types import (
     CompletionParams,
     InitializeParams,
     TextDocumentSyncKind,
-    TEXT_DOCUMENT_COMPLETION,
-    InlineCompletionItem
+    TEXT_DOCUMENT_COMPLETION
 )
 # from pygls.features import COMPLETION
 
 # Crea il Language Server
+
+logging.basicConfig(filename="server_lsp_mio.log", level=logging.DEBUG)
 
 
 class SuperColliderLanguageServer(LanguageServer):
@@ -32,6 +34,7 @@ server = SuperColliderLanguageServer()
 
 @server.feature("initialize")
 def initialize(params: InitializeParams):
+    logging.debug(f"Server initialized with params: {params}")
     return {
         "capabilities": {
             "textDocumentSync": TextDocumentSyncKind.Full,
@@ -61,6 +64,8 @@ def completions(params: CompletionParams):
 
 # Avvia il server
 if __name__ == "__main__":
+    logging.debug("Starting SuperCollider Language Server...")
     server.start_io()
+    logging.debug("Server stopped.")
 
 # server.start_tcp('127.0.0.1', 8080)
