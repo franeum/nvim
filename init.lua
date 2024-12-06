@@ -24,6 +24,7 @@ Plug('hrsh7th/nvim-cmp')
 Plug('hrsh7th/cmp-nvim-lsp')
 Plug('rafamadriz/friendly-snippets')
 Plug('neovim/nvim-lspconfig')
+Plug('neovim/nvim-lspconfig')
 
 vim.call('plug#end')
 
@@ -84,11 +85,29 @@ cmp.setup({
 })
 
 -- Abilita il completamento per gli snippet
+--[[
 require'cmp'.setup {
   sources = {
     { name = 'luasnip' },
   },
 }
+]]--
+
+local lspconfig = require('lspconfig')
+
+lspconfig.oldstyle = {
+    cmd = {"python", "/home/franeum/Documenti/supercollider_lsp/oldstyle.py"}, -- Percorso del server
+    filetypes = {"supercollider"}, 
+    root_dir = function(fname)
+        return vim.fn.getcwd() -- Usa la directory corrente come root
+    end,
+    on_attach = function(client, bufnr)
+    -- Funzioni da eseguire quando il client si connette
+      require('lsp').on_attach(client, bufnr)
+    end,
+    settings = {}
+}
+
 
 local lspconfig = require("lspconfig")
 
