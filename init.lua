@@ -7,6 +7,7 @@ opt.cursorline = true
 opt.number = true
 opt.relativenumber = false
 opt.termguicolors = true
+vim.lsp.set_log_level("debug")
 
 --vim.cmd[[colorscheme tokyonight]]
 vim.call('plug#begin')
@@ -22,6 +23,7 @@ Plug("saadparwaiz1/cmp_luasnip")
 Plug('hrsh7th/nvim-cmp')
 Plug('hrsh7th/cmp-nvim-lsp')
 Plug('rafamadriz/friendly-snippets')
+Plug('neovim/nvim-lspconfig')
 
 vim.call('plug#end')
 
@@ -87,3 +89,27 @@ require'cmp'.setup {
     { name = 'luasnip' },
   },
 }
+
+local lspconfig = require("lspconfig")
+
+-- Define the SuperCollider LSP
+lspconfig.supercollider_lsp = {
+    cmd = { "python", "/home/neum/Documenti/SC-LSP/example_server.py" }, -- Update with the server's path
+    filetypes = { "supercollider" }, -- File type for SuperCollider
+    root_dir = lspconfig.util.root_pattern(".git", "."), -- Define the root directory
+    on_attach = function(client, bufnr)
+        -- Enable LSP-related keybindings
+        local bufmap = function(mode, lhs, rhs)
+            vim.api.nvim_buf_set_keymap(bufnr, mode, lhs, rhs, { noremap = true, silent = true })
+        end
+
+        bufmap("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>")
+        bufmap("n", "K", "<cmd>lua vim.lsp.buf.hover()<CR>")
+    end,
+}
+
+vim.filetype.add({
+    extension = {
+        scd = "supercollider",
+    },
+})
