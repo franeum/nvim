@@ -74,7 +74,7 @@ local lspconfig = require('lspconfig')
 
 -- Integrazione delle capacità di completamento con LSP
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
-local cmd = { "/home/neum/anaconda3/bin/python", "/home/neum/.config/nvim/oldstyle.py" }
+local cmd = { "/home/neum/anaconda3/bin/python", "/home/neum/Documenti/sclsp/sclsp.py" }
 local configs = require 'lspconfig.configs'
 
 -- Check if the config is already defined (useful when reloading this file)
@@ -83,9 +83,10 @@ if not configs.supercollider_lsp then
     default_config = {
         cmd = cmd,
         filetypes = {'supercollider'},
-        root_dir = function(fname)
+        --[[root_dir = function(fname)
             return vim.loop.cwd()
-          end,
+          end,]]--
+	root_dir = "/home/neum/Documenti/sclsp/.",
         settings = {},
     },
     }
